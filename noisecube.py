@@ -85,8 +85,8 @@ def noisecube(pbcordata,filename,paramfile,primbeam=None):
     rebin = int(fixedparameters['rebin'])  
     # Identify the spatial region the data is extracted on by creating a spatial array 
     # Make the map 0 everywhere except in the region where the data is taken 
-    # This will be rebinned to produce a noise cube on the same scale as the final ALMA data model in the dynamical
-    # program 
+    # This will be rebinned to produce a noise cube on the same scale 
+    # As the final ALMA data model in the dynamical program 
     
     # Rebin the data_map array by a factor of rebin
     # Noise region 
