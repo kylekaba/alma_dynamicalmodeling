@@ -209,7 +209,6 @@
     if verbose == True: 
         print('The rest frequency of the molecular gas line in Hz is',restfreq)
 
-    # test github
     ### FREE PARAMETERS OF THE MODEL
     mbh = freeparams['mbh']
     MtoL = freeparams['MtoL']
@@ -652,7 +651,6 @@
     # Create an integrated gaussian line profile following the methodology of B. Boizelle
     # The integrated line profile will be weighted by the deconvolved flux map in the following step
     glineflux = np.swapaxes(np.swapaxes(-0.5*np.array([-scipy.special.erf((i-(delta_f/2)-f_obs)/(np.sqrt(2)*df_obs))+scipy.special.erf(((i+(delta_f/2)-f_obs)/(np.sqrt(2)*df_obs))) for i in f_range]),2,0),0,1)
-    #glineflux[glineflux < 1e-6*np.max(glineflux)] = 0
     
     if verbose == True:
         print('The line profile array shape is currently',glineflux.shape)
@@ -711,8 +709,6 @@
             hdu=fits.PrimaryHDU(np.swapaxes(np.swapaxes(glineflux,0,2),1,2))
             hdu.writeto(modelpreconvolution,overwrite=True)
     
-    #glineflux[glineflux < np.max(glineflux)*1e-6] = 0
-    
     if verbose == True:
         print('The shape of the model line profile array is',glineflux.shape)
       
@@ -740,9 +736,10 @@
     rebinned_glineflux = np.zeros((ndx,ndy,ndz))
     for i in range(ndz):
         rebinned_glineflux[:,:,i] = block_reduce(glineflux[:,:,i],ssf,np.sum)
-        rebinned_glineflux[np.isnan(rebinned_glineflux)] = 0
 
-    rebinned_glineflux[rebinned_glineflux < 1e-6*np.max(rebinned_glineflux)] = 0    
+    # Set extremely low values of the cube to 0 in order to not convolve over these values
+    # Be sure to do this only once to not slow down the program
+    rebinned_glineflux[rebinned_glineflux < 1e-5*np.max(rebinned_glineflux)] = 0    
     
     # Convolve the PSF with the integrated Gaussian line profile 
     # First pre-allocate arrays to be filled at both the original scale and at the block-averaged scale.
@@ -750,7 +747,6 @@
     convolvetest_sub = np.zeros((int(ndx/(rebin)),int(ndy/(rebin)),ndz))
     
     # Define the fitting ellipse that determines where the model optimizations occur
-
     semimaj = a
     semimin = q*a
     Gamma=(90.+Gamma)/180.*np.pi
@@ -865,8 +861,9 @@
     for i in list(range(z_i-1,z_f-1)):
         cubepsflist.append((rebinned_glineflux[box_ylo:box_yhi,box_xlo:box_xhi,i],PSF_sub,'extend','normalize_kernel=True'))
     
-    pool = multiprocessing.Pool(processes=2,maxtasksperchild=1)
+    # Initiate multiprocessing for convolution 
     if __name__ == '__main__':
+        pool = multiprocessing.Pool(processes=2,maxtasksperchild=1)
         mappedarray = np.array(pool.starmap(convolve,cubepsflist))
         pool.close()
         pool.join()
