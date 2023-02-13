@@ -1,4 +1,4 @@
-def dynamical(freeparams,
+ def dynamical(freeparams,
               textparamfile,
               galaxyname,
               f_range,
@@ -209,6 +209,7 @@ def dynamical(freeparams,
     if verbose == True: 
         print('The rest frequency of the molecular gas line in Hz is',restfreq)
 
+    # test github
     ### FREE PARAMETERS OF THE MODEL
     mbh = freeparams['mbh']
     MtoL = freeparams['MtoL']
